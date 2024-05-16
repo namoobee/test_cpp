@@ -28,9 +28,9 @@ public:
 		cout << "사각형의 넓이: " << Rect_area << endl;
 	}
 
-	void printInfo() // 변의 개수와 밑변의 길이를 출력
+	void printInfo(int w, int h) // 변의 개수와 밑변의 길이를 출력
 	{
-		cout << "사각형입니다. " << endl;
+		cout << "사각형의 넓이는 " << w * h << "입니다." << endl;
 	};
 };
 
@@ -47,23 +47,23 @@ public:
 		cout << "삼각형의 넓이: " << Tri_area << endl;
 	}
 
-	void printInfo() // 변의 개수와 밑변의 길이를 출력
+	void printInfo(int w, int h) // 변의 개수와 밑변의 길이를 출력
 	{
-		cout << "삼각형입니다. " << endl;
+		cout << "삼각형의 넓이는 " << w * h / 2 << "입니다." << endl;
 	};
 };
 
 int main()
 {
 	Rectangle rect(4, 4, 3); //변의 개수, 밑변의 길이, 높이
-	rect.printInfo();
-	rect.area();
-	rect.Shape::printInfo();
-
 	Triangle tri(3, 4, 3); // 변의 개수, 밑변의 길이, 높이
-	tri.printInfo();
-	tri.area();
-	tri.Shape::printInfo();
+	// rect.area();
+	// tri.area();
 
+	rect.Shape::printInfo();
+	rect.printInfo(5, 2);
+
+	tri.Shape::printInfo();
+	tri.printInfo(2, 3);
 	return 0;
 }
