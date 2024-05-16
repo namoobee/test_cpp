@@ -7,7 +7,7 @@ protected:
 	virtual void draw() = 0;
 };
 
-class Circle : protected Shape
+class Circle : public Shape
 {
 public:
 	void draw() override
@@ -16,7 +16,7 @@ public:
 	}
 };
 
-class Rectangle : protected Shape
+class Rectangle : public  Shape
 {
 public:
 	void draw() override
@@ -25,7 +25,7 @@ public:
 	}
 };
 
-class Triangle : protected Shape
+class Triangle : public  Shape
 {
 public:
 	void draw() override
