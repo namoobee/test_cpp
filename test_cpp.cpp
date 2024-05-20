@@ -3,79 +3,63 @@
 
 using namespace std;
 
-class Snack
+class Person
 {
 public:
-	int Price; // 가격
-	string Name; // 상품이름
-	string Company; // 제조회사
-
-	Snack() : Price(0), Name(""), Company("") {}
-
-	Snack(int price, string name, string company)
-	{
-		this->Price = price;
-		this->Name = name;
-		this->Company = company;
-	}
-	virtual void PrintCompany() = 0; 
+	virtual void intro() { cout << "사람입니다." << endl; }
 };
 
-
-class Candy : public Snack
+class Student : public Person
 {
-public:
-	string Taste; // 맛
+	string name;
 
-	Candy(string taste, int price, string name, string company)
-	{
-		this->Taste = taste;
-		this->Price = price;
-		this->Name = name;
-		this->Company = company;
-	}
-	void PrintCompany() override
-	{
-		cout << "제조사: " << this->Company << endl;
-	}
+public:
+	Student(string name) { this->name = name; }
+
+	void intro() override { cout << "학생입니다." << endl; }
+
+	void learn() { cout << "배웁니다." << endl; }
 };
 
-class Chocolate : public Snack
+class Teacher : public Person
 {
+	string name;
+	
 public:
-	string Shape; // 모양
+	Teacher(string name) { this->name = name; }
 
-	Chocolate(string shape, int price, string name, string company)
-	{
-		this->Shape = shape;
-		this->Price = price;
-		this->Name = name;
-		this->Company = company;
-	}
-	void PrintCompany() override
-	{
-		cout << "제조사: " << this->Company << endl;
-	}
+	void intro() override { cout << "선생입니다." << endl; }
+
+	void teach() { cout << "가르칩니다." << endl; }
+
 };
 
 int main()
 {
-	Snack* SnackBasket[4]; 
-	SnackBasket[0] = new Candy("salty", 1500, "아이셔", "오리온");
-	SnackBasket[1] = new Candy("sweet", 1000, "땅콩캬라멜", "크라운"); 
-	SnackBasket[2] = new Chocolate("rectangle", 2100, "가나", "롯데제과"); 
-	SnackBasket[3] = new Chocolate("triangle", 2500, "토블론", "몬델리즈"); 
+	Person* pList[3];
+	string names[3];
 
-	for (int i = 0; i < 4; i++)
+	cout << "3명의 이름을 입력해 주세요.(선생님, 학생, 학생)" << endl;
+	cin >> names[0], names[1], names[2];
+
+	// name[] 배열을 이용하여 각 class 생성
+	Teacher* teacher = new Teacher(names[0]);
+	Student* student1 = new Student(names[1]);
+	Student* student2 = new Student(names[2]);
+
+	// pList에 할당하는 코드 추가
+	pList[0] = teacher;
+	pList[1] = student1;
+	pList[2] = student2;
+
+	for (auto p : pList)
 	{
-		cout << SnackBasket[i]->Name << ", "; 
-		SnackBasket[i]->PrintCompany();
+		p->intro();
 	}
-	// 동적 할당된 메모리를 해제
-	for (int i = 0; i < 4; i++)
-	{
-		delete SnackBasket[i];
-	}
+
+	((Teacher*)pList[0])->teach();
+	((Student*)pList[1])->learn();
+	((Student*)pList[2])->learn();
+
 	return 0;
 }
-// candy, chocolate의 생성자에서 각각 제조사를 입력 받는다는 것은 main함수의 
