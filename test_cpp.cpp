@@ -1,65 +1,92 @@
 ﻿#include <iostream>
 #include <string>
+#include <vector>
 
 using namespace std;
 
-class Person
+class Snack
 {
+protected:
+    string taste;
+    string shape;
+
 public:
-	virtual void intro() { cout << "사람입니다." << endl; }
+    Snack(string t, string s)
+        : taste(t), shape(s) {}
+
+    virtual ~Snack() {}
+
+    virtual void Print() const = 0;
+
+    string getTaste() const { return this->taste; }
+    string getShape() const { return this->shape; }
 };
 
-class Student : public Person
+class Candy : public Snack
 {
-	string name;
-
 public:
-	Student(string name) { this->name = name; }
+    Candy(string taste)
+        : Snack(taste, "") {}
 
-	void intro() override { cout << "학생입니다." << endl; }
-
-	void learn() { cout << "배웁니다." << endl; }
+    void Print() const override
+    {
+        cout << this->getTaste() << "맛 사탕" << endl;
+    }
 };
 
-class Teacher : public Person
+class Chocolate : public Snack
 {
-	string name;
-	
 public:
-	Teacher(string name) { this->name = name; }
+    Chocolate(string shape)
+        : Snack("", shape) {}
 
-	void intro() override { cout << "선생입니다." << endl; }
-
-	void teach() { cout << "가르칩니다." << endl; }
-
+    void Print() const override
+    {
+        cout << this->getShape()<< "모양 초콜릿" << endl;
+    }
 };
 
 int main()
 {
-	Person* pList[3];
-	string names[3];
+    vector<Snack*> SnackBasket;
+    int choice;
 
-	cout << "3명의 이름을 입력해 주세요.(선생님, 학생, 학생)" << endl;
-	cin >> names[0], names[1], names[2];
+    while (true)
+    {
+        cout << "과자 바구니에 추가할 간식을 고르시오. (1: 사탕, 2: 초콜릿, 0: 종료) : ";
+        cin >> choice;
 
-	// name[] 배열을 이용하여 각 class 생성
-	Teacher* teacher = new Teacher(names[0]);
-	Student* student1 = new Student(names[1]);
-	Student* student2 = new Student(names[2]);
-
-	// pList에 할당하는 코드 추가
-	pList[0] = teacher;
-	pList[1] = student1;
-	pList[2] = student2;
-
-	for (auto p : pList)
-	{
-		p->intro();
-	}
-
-	((Teacher*)pList[0])->teach();
-	((Student*)pList[1])->learn();
-	((Student*)pList[2])->learn();
-
-	return 0;
+        switch (choice)
+        {
+        case 1:
+        {
+            string taste;
+            cout << "맛을 입력하세요. : ";
+            cin >> taste;
+            SnackBasket.push_back(new Candy(taste));
+            break;
+        }
+        case 2:
+        {
+            string shape;
+            cout << "모양을 입력하세요: ";
+            cin >> shape;
+            SnackBasket.push_back(new Chocolate(shape));
+            break;
+        }
+        case 0:
+            cout << "과자 바구니에 담긴 간식의 개수는 " << SnackBasket.size() << "개 입니다." << endl;
+            cout << "과자 바구니에 담긴 간식 확인하기!" << endl;
+            for (auto& snack : SnackBasket)
+            {
+                snack->Print();
+                delete snack;
+            }
+            SnackBasket.clear();
+            return 0;
+        default:
+            cout << "0 ~ 2 사이의 숫자를 입력하세요." << endl;
+        }
+    }
+    return 0;
 }
