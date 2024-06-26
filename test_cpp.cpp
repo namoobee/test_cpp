@@ -1,92 +1,70 @@
 ﻿#include <iostream>
-#include <string>
-#include <vector>
+#include <thread>
+#include <mutex>
 
 using namespace std;
 
-class Snack
+class BankAccount
 {
-protected:
-    string taste;
-    string shape;
+private:
+	int balance = 1000; // 예금된 금액(공유자원)
+	mutex mtx;
 
 public:
-    Snack(string t, string s)
-        : taste(t), shape(s) {}
-
-    virtual ~Snack() {}
-
-    virtual void Print() const = 0;
-
-    string getTaste() const { return this->taste; }
-    string getShape() const { return this->shape; }
+	// 입금
+	void deposit(int amount)
+	{
+		mtx.lock(); // 잠금
+		balance += amount;
+		cout << amount << "원을 입금합니다." << endl;
+		cout << "계좌의 잔고는 " << balance << "원 입니다." << endl;
+		mtx.unlock(); // 잠금 해제
+	}
+	// 출금
+	void withdraw(int amount)
+	{
+		mtx.lock();
+		if (balance >= amount)
+		{
+			balance -= amount;
+			cout << amount << "원을 출금합니다." << endl;
+		}
+		else
+		{
+			cout << "잔고가 부족합니다." << endl;
+		}
+		cout << "계좌의 잔고는 " << balance << "원 입니다." << endl;
+		mtx.unlock();
+	}
 };
 
-class Candy : public Snack
+// count 횟수만큼 amount를 입금(deposit)
+void deposit_iter(BankAccount& account, int amount, int count)
 {
-public:
-    Candy(string taste)
-        : Snack(taste, "") {}
-
-    void Print() const override
-    {
-        cout << this->getTaste() << "맛 사탕" << endl;
-    }
-};
-
-class Chocolate : public Snack
+	for (int i = 0; i < count; ++i)
+	{
+		account.deposit(amount);
+	}
+}
+// count 횟수만큼 amount를 출금 (withdraw)
+void withdraw_iter(BankAccount& account, int amount, int count)
 {
-public:
-    Chocolate(string shape)
-        : Snack("", shape) {}
-
-    void Print() const override
-    {
-        cout << this->getShape()<< "모양 초콜릿" << endl;
-    }
-};
-
+	for (int i = 0; i < count; ++i)
+	{
+		account.withdraw(amount);
+	}
+}
 int main()
 {
-    vector<Snack*> SnackBasket;
-    int choice;
+	BankAccount account;
 
-    while (true)
-    {
-        cout << "과자 바구니에 추가할 간식을 고르시오. (1: 사탕, 2: 초콜릿, 0: 종료) : ";
-        cin >> choice;
+	// 스레드를 사용하여 입금과 출금 수행
+	thread deposit_thread(deposit_iter, ref(account), 100, 100);
+	thread withdraw_thread(withdraw_iter, ref(account), 100, 100);
 
-        switch (choice)
-        {
-        case 1:
-        {
-            string taste;
-            cout << "맛을 입력하세요. : ";
-            cin >> taste;
-            SnackBasket.push_back(new Candy(taste));
-            break;
-        }
-        case 2:
-        {
-            string shape;
-            cout << "모양을 입력하세요: ";
-            cin >> shape;
-            SnackBasket.push_back(new Chocolate(shape));
-            break;
-        }
-        case 0:
-            cout << "과자 바구니에 담긴 간식의 개수는 " << SnackBasket.size() << "개 입니다." << endl;
-            cout << "과자 바구니에 담긴 간식 확인하기!" << endl;
-            for (auto& snack : SnackBasket)
-            {
-                snack->Print();
-                delete snack;
-            }
-            SnackBasket.clear();
-            return 0;
-        default:
-            cout << "0 ~ 2 사이의 숫자를 입력하세요." << endl;
-        }
-    }
-    return 0;
+	// 스레드가 종료될 때까지 대기
+	deposit_thread.join();
+	withdraw_thread.join();
+
+	return 0;
 }
