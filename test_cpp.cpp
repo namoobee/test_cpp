@@ -1,70 +1,53 @@
 ﻿#include <iostream>
 #include <thread>
 #include <mutex>
+#include <chrono>
 
 using namespace std;
 
-class BankAccount
-{
-private:
-	int balance = 1000; // 예금된 금액(공유자원)
-	mutex mtx;
+mutex mtx;
+condition_variable cv;
+bool alarm_set = false;
 
-public:
-	// 입금
-	void deposit(int amount)
-	{
-		mtx.lock(); // 잠금
-		balance += amount;
-		cout << amount << "원을 입금합니다." << endl;
-		cout << "계좌의 잔고는 " << balance << "원 입니다." << endl;
-		mtx.unlock(); // 잠금 해제
-	}
-	// 출금
-	void withdraw(int amount)
-	{
-		mtx.lock();
-		if (balance >= amount)
-		{
-			balance -= amount;
-			cout << amount << "원을 출금합니다." << endl;
-		}
-		else
-		{
-			cout << "잔고가 부족합니다." << endl;
-		}
-		cout << "계좌의 잔고는 " << balance << "원 입니다." << endl;
-		mtx.unlock();
-	}
-};
 
-// count 횟수만큼 amount를 입금(deposit)
-void deposit_iter(BankAccount& account, int amount, int count)
+void timer(int time)
 {
-	for (int i = 0; i < count; ++i)
+	cout << "남은시간" << endl;
+	for (int i = time; i > 0; --i)
 	{
-		account.deposit(amount);
+		this_thread::sleep_for(chrono::seconds(1));
+		{
+			lock_guard<mutex> lock(mtx);
+			cout << i << endl;
+		}
 	}
+	{
+		lock_guard<mutex> lock(mtx);
+		alarm_set = true;
+	}
+	cv.notify_one();
 }
-// count 횟수만큼 amount를 출금 (withdraw)
-void withdraw_iter(BankAccount& account, int amount, int count)
+
+void wait_for_alarm()
 {
-	for (int i = 0; i < count; ++i)
-	{
-		account.withdraw(amount);
-	}
+	unique_lock<mutex> lock(mtx);
+	cv.wait(lock, [] { return alarm_set; });
+	cout << "알람이 울립니다!!" << endl;
 }
+
 int main()
 {
-	BankAccount account;
+	cout << "알람을 기다리는 중..." << endl;
 
-	// 스레드를 사용하여 입금과 출금 수행
-	thread deposit_thread(deposit_iter, ref(account), 100, 100);
-	thread withdraw_thread(withdraw_iter, ref(account), 100, 100);
+	int alarmTime;
+	cout << "설정할 알람의 시간을 입력하세요(초 단위): ";
+	cin >> alarmTime;
 
-	// 스레드가 종료될 때까지 대기
-	deposit_thread.join();
-	withdraw_thread.join();
+	thread timerThread(timer, alarmTime);
+	thread waitThread(wait_for_alarm);
+
+	timerThread.join();
+	waitThread.join();
 
 	return 0;
 }
